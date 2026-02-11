@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shadow Directorate - Mission Control</title>
+<style>
+body {
+    background:black;
+    color:#00ff88;
+    font-family:monospace;
+    margin:0;
+    padding:20px;
+}
+#terminal{
+    white-space: pre-line;
+    font-size:18px;
+}
+button{
+    background:black;
+    color:#00ff88;
+    border:1px solid #00ff88;
+    padding:10px;
+    margin:5px;
+    cursor:pointer;
+    font-family:monospace;
+}
+button:hover{
+    background:#00ff88;
+    color:black;
+}
+.red{color:red;}
+</style>
+</head>
+<body>
+<div id="terminal">INITIALIZING SECURE TERMINAL...</div>
+<div id="missions"></div>
+
+<script>
+// --- AGENTS ---
+const agents = ["PHANTOM","RAVEN","VIPER","GHOST"];
+
+// --- MISSIONS PER AGENT ---
+const agentMissions = {
+    "PHANTOM":[
+        {name:"Silent Extraction", location:"Sector 7", objective:"Retrieve sensitive data without alerting guards", capsule:"C-01"},
+        {name:"Ghost Recon", location:"Grid 12", objective:"Scout enemy base undetected", capsule:"C-02"},
+        {name:"Data Heist", location:"Server Room X", objective:"Exfiltrate critical intel", capsule:"C-03"}
+    ],
+    "RAVEN":[
+        {name:"Night Surveillance", location:"Tower 5", objective:"Monitor communications covertly", capsule:"R-01"},
+        {name:"Asset Escort", location:"Black Site", objective:"Secure and transport target safely", capsule:"R-02"},
+        {name:"Intel Gathering", location:"Data Node Z", objective:"Collect enemy schematics", capsule:"R-03"}
+    ],
+    "VIPER":[
+        {name:"Weapon Intercept", location:"Dock 9", objective:"Prevent illegal weapons shipment", capsule:"V-01"},
+        {name:"Sabotage", location:"Factory 17", objective:"Disable enemy machinery", capsule:"V-02"},
+        {name:"Extraction", location:"Safehouse B", objective:"Retrieve VIP safely", capsule:"V-03"}
+    ],
+    "GHOST":[
+        {name:"Recon Ops", location:"Sector 21", objective:"Map enemy territory", capsule:"G-01"},
+        {name:"Intercept Communication", location:"Signal Tower", objective:"Decode enemy transmissions", capsule:"G-02"},
+        {name:"Stealth Recovery", location:"Abandoned Base", objective:"Recover lost intel", capsule:"G-03"}
+    ]
+};
+
+// --- GET AGENT FROM URL ---
+const params = new URLSearchParams(window.location.search);
+const agent = params.get("agent") ? params.get("agent").toUpperCase() : null;
+
+const terminal = document.getElementById("terminal");
+const missionsDiv = document.getElementById("missions");
+
+// --- TYPING EFFECT ---
+function typeText(text, speed=40, callback=null){
+    let i=0;
+    function type(){
+        if(i<text.length){
+            terminal.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(type,speed);
+        }else if(callback) callback();
+    }
+    type();
+}
+
+// --- DISPLAY MISSIONS ---
+function showMissions(agent){
+    terminal.innerHTML = `AGENT: ${agent}\nSECURE TERMINAL ONLINE\n\nAvailable Missions:\n`;
+    const missions = agentMissions[agent];
+    missionsDiv.innerHTML = "";
+    missions.forEach((m,index)=>{
+        let btn = document.createElement("button");
+        btn.innerText = m.name;
+        btn.onclick = ()=>showMissionDetail(agent,index);
+        missionsDiv.appendChild(btn);
+    });
+}
+
+// --- DISPLAY MISSION DETAILS ---
+function showMissionDetail(agent,index){
+    const mission = agentMissions[agent][index];
+    terminal.innerHTML = `AGENT: ${agent}\nMISSION: ${mission.name}\n\nLocation: ${mission.location}\nObjective: ${mission.objective}\nCapsule: ${mission.capsule}\n\nScan capsule QR to unlock next mission.`;
+    missionsDiv.innerHTML = "";
+    // Next mission button if exists
+    if(index+1 < agentMissions[agent].length){
+        let nextBtn = document.createElement("button");
+        nextBtn.innerText = "Next Mission (Unlock with capsule)";
+        nextBtn.onclick = ()=>showMissionDetail(agent,index+1);
+        missionsDiv.appendChild(nextBtn);
+    }else{
+        let doneBtn = document.createElement("button");
+        doneBtn.innerText = "All missions completed!";
+        doneBtn.onclick = ()=>showMissions(agent);
+        missionsDiv.appendChild(doneBtn);
+    }
+}
+
+// --- START TERMINAL ---
+if(agent && agents.includes(agent)){
+    typeText(`AGENT IDENTIFIED: ${agent}\nWelcome to Shadow Directorate\nInitializing Mission Protocols...\n\n`,40, ()=>showMissions(agent));
+}else{
+    terminal.innerHTML = "UNAUTHORIZED ACCESS DETECTED\n\nTERMINAL LOCKED";
+    terminal.classList.add("red");
+}
+</script>
+</body>
+</html>
